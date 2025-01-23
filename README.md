@@ -69,11 +69,13 @@ python train.py experiment=fno server=local data=active_matter
 
 ## benchmark必做步骤
 1. 每次debug时修改了代码文件(.py)都需要：激活虚拟环境->在the_well目录下运行```pip install .```重新安装环境，否则无法保存修改。
-2. 当提交的slurm任务没有跑起来时不要修改config文件（.yaml)否则会运行新参数。
-3. 代码运行起来一个epoch并测试完之后，才能确保没有bug。
-4. 如果跑了超过1个epoch发现参数有误，需要进入```the_well/the_well/benchmark/```路径下寻找experiments文件夹，在该文件夹中删除对应名称的文件夹再重新运行，否则将会接续训练之前保存的模型。同样，这个文件夹中存在着之前每次测试的测试结果，要保存好。同理，相同名字的任务可以接续训练。
-5. 该代码自带wandb，但更新比较慢。接续训练可以使用同样的wandb term。
-6. ## 每下载一个数据集，都要前往```the_well/the_well/benchmark/configs/data/```中找到对应的数据集的config文件，把well_base_path改成形如```/home/zw474/project/LOLL/the_well/datasets```的东西。保证你的datasets的下级目录有```active_matter/data/train```等文件夹。 ##
-7. ```the_well/the_well/benchmark/configs/data/```的参数文件中可以改训练时说batch_size，如果报错OOM可以前往这里修改。
-8. 
+3. 当提交的slurm任务没有跑起来时不要修改config文件（.yaml)否则会运行新参数。
+4. 代码运行起来一个epoch并测试完之后，才能确保没有bug。
+5. 如果跑了超过1个epoch发现参数有误，需要进入```the_well/the_well/benchmark/```路径下寻找experiments文件夹，在该文件夹中删除对应名称的文件夹再重新运行，否则将会接续训练之前保存的模型。同样，这个文件夹中存在着之前每次测试的测试结果，要保存好。同理，相同名字的任务可以接续训练。
+6. 该代码自带wandb，但更新比较慢。接续训练可以使用同样的wandb term。
+7. ## 每下载一个数据集，都要前往```the_well/the_well/benchmark/configs/data/```中找到对应的数据集的config文件，把well_base_path改成形如```/home/zw474/project/LOLL/the_well/datasets```的东西。保证你的datasets的下级目录有```active_matter/data/train```等文件夹。 ##
+8. ```the_well/the_well/benchmark/configs/data/```的参数文件中可以改训练时说batch_size，如果报错OOM可以前往这里修改。
+9. 如果想在运行前设置某个实验的名称，可以```the_well/the_well/benchmark/utils/experiment_utils.py```的23行修改名称（不修改也问题不大。建议不要使用slurm的job序号，会使接续训练变麻烦）。
+   ## 不要同时提交两个名字相同的实验！
+10. 
 
