@@ -5,6 +5,8 @@ import hydra
 import torch
 import torch.distributed as dist
 import wandb
+import random
+import numpy as np
 from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -25,6 +27,17 @@ CONFIG_PATH = osp.join(CONFIG_DIR, f"{CONFIG_NAME}.yaml")
 assert osp.isfile(CONFIG_PATH), f"Configuration {CONFIG_PATH} is not an existing file."
 logger.info(f"Run training script for {CONFIG_PATH}")
 
+#seed = 0xD3
+#torch.manual_seed(seed)
+#random.seed(seed)
+#np.random.seed(seed)
+
+#if torch.cuda.is_available():
+#    torch.cuda.manual_seed(seed)
+#    #torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+#    torch.backends.cudnn.deterministic = True  # ensures deterministic behavior
+#    torch.backends.cudnn.benchmark = False 
+
 
 def train(
     cfg: DictConfig,
@@ -34,27 +47,33 @@ def train(
     viz_folder: str,
     is_distributed: bool = False,
     world_size: int = 1,
-    rank: int = 1,
-    local_rank: int = 1,
+    rank: int = 1, # 0
+    local_rank: int = 1, # 0
 ):
     """Instantiate the different objects required for training and run the training loop."""
-    validation_mode = cfg.validation_mode
-    logger.info(f"Instantiate datamodule {cfg.data._target_}")
+    validation_mode = cfg.validation_mode #False
+    logger.info(f"Instantiate datamodule {cfg.data._target_}") # _target_: the_well.data.WellDataModule
     datamodule: WellDataModule = instantiate(
-        cfg.data, world_size=world_size, rank=rank, data_workers=cfg.data_workers
+        cfg.data, world_size=world_size, rank=rank, data_workers=cfg.data_workers#, include_filters=["alpha_-5.0"]
     )
     dset_metadata = datamodule.train_dataset.metadata
+    print(dset_metadata)#
+    #logger.info(f"dset_metadata{type(dset_metadata.field_names)}, {dset_metadata.field_names}, {dset_metadata.constant_field_names}")
     # TODO - currently just doing channel/time stacking for uniformity, but should
     # give the option of not stacking
     n_input_fields = (
         cfg.data.n_steps_input * dset_metadata.n_fields
         + dset_metadata.n_constant_fields
     )
-    n_output_fields = dset_metadata.n_fields
+    n_output_fields = cfg.data.n_steps_output * dset_metadata.n_fields ### times n_steps_output
+
+    logger.info(f"dset_metadata.n_fields {dset_metadata.n_fields}, dset_metadata.n_constant_fields {dset_metadata.n_constant_fields}" )
+    logger.info(f"n_input_fields {n_input_fields}, n_output_fields {n_output_fields}" )
 
     logger.info(
         f"Instantiate model {cfg.model._target_}",
     )
+    
     model: torch.nn.Module = instantiate(
         cfg.model,
         dset_metadata=dset_metadata,
@@ -109,6 +128,7 @@ def train(
         lr_scheduler=lr_scheduler,
         device=device,
         is_distributed=is_distributed,
+        n_steps_output=cfg.data.n_steps_output, ###ok
     )
     if validation_mode:
         trainer.validate()
@@ -139,16 +159,17 @@ def main(cfg: DictConfig):
     logger.info(f"Run experiment {experiment_name}")
     logger.info(f"Configuration:\n{OmegaConf.to_yaml(cfg)}")
     # Initiate wandb logging
-    wandb_logged_cfg = OmegaConf.to_container(cfg, resolve=True)
-    wandb_logged_cfg["experiment_folder"] = experiment_folder
-    wandb.init(
-        dir=experiment_folder,
-        project=cfg.wandb_project_name,
-        group=f"{cfg.data.well_dataset_name}",
-        config=wandb_logged_cfg,
-        name=experiment_name,
-        resume=True,
-    )
+    if not cfg.validation_mode:
+        wandb_logged_cfg = OmegaConf.to_container(cfg, resolve=True)
+        wandb_logged_cfg["experiment_folder"] = experiment_folder
+        wandb.init(
+            dir=experiment_folder,
+            project=cfg.wandb_project_name,
+            group=f"{cfg.data.well_dataset_name}",
+            config=wandb_logged_cfg,
+            name=experiment_name,
+            resume=True,
+        )
 
     # Retrieve multiple processes context to setup DDP
     is_distributed, world_size, rank, local_rank = (
@@ -171,12 +192,13 @@ def main(cfg: DictConfig):
         checkpoint_folder,
         artifact_folder,
         viz_folder,
-        is_distributed,
-        world_size,
-        rank,
-        local_rank,
+        is_distributed, # False
+        world_size, # 1
+        rank, # 0
+        local_rank, # 0
     )
-    wandb.finish()
+    if not cfg.validation_mode:
+        wandb.finish()
 
 
 if __name__ == "__main__":
