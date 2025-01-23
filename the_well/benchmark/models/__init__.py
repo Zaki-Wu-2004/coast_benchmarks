@@ -6,6 +6,7 @@ from .refno import ReFNO
 from .tfno import TFNO
 from .unet_classic import UNetClassic
 from .unet_convnext import UNetConvNext
+from .dpot import DPOTNet
 
 __all__ = [
     "FNO",
@@ -13,6 +14,7 @@ __all__ = [
     "UNetClassic",
     "UNetConvNext",
     "DilatedResNet",
+    "DPOTNet",
     "ReFNO",
     "AViT",
     "AFNO",
