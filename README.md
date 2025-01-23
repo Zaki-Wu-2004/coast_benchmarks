@@ -9,13 +9,6 @@ python -m venv path/to/env
 source path/to/env/activate/bin
 ```
 
-#### From PyPI
-
-The Well package can be installed directly from PyPI.
-
-```
-pip install the_well
-```
 
 #### From Source
 
@@ -33,11 +26,11 @@ Depending on your acceleration hardware, you can specify `--extra-index-url` to 
 pip install . --extra-index-url https://download.pytorch.org/whl/cu121
 ```
 
-to install the dependencies built for CUDA 12.1.
+to install the dependencies built for CUDA 12.1. 这里cuda版本改一下
 
 #### Benchmark Dependencies
 
-If you want to run the benchmarks, you should install additional dependencies.
+If you want to run the benchmarks, you should install additional dependencies. 需要运行的。
 
 ```
 pip install the_well[benchmark]
@@ -45,15 +38,20 @@ pip install the_well[benchmark]
 
 ### Downloading the Data
 
-The Well datasets range between 6.9GB and 5.1TB of data each, for a total of 15TB for the full collection. Ensure that your system has enough free disk space to accomodate the datasets you wish to download.
 
 Once `the_well` is installed, you can use the `the-well-download` command to download any dataset of The Well.
 
 ```
-the-well-download --base-path path/to/base --dataset active_matter --split train
+the-well-download --base-path path/to/base --dataset active_matter
 ```
-
-If `--dataset` and `--split` are omitted, all datasets and splits will be downloaded. This could take a while!
+1. path/to/base 需要修改成当前目录，建议使用相对路径。
+2. 把active_matter修改可以下载其他数据集，我们使用的数据集有(按照优先级）：
+   active_matter
+   turbulent_radiative_layer_2D
+   viscoelastic_instability
+   gray_scott_reaction_diffusion
+   rayleigh_benard
+   shear_flow
 
 ### Streaming from Hugging Face
 
