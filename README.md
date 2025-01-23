@@ -47,12 +47,12 @@ the-well-download --base-path path/to/base --dataset active_matter
 
 1. ```path/to/base``` 需要修改成当前目录，建议使用相对路径（比如在the_well目录下直接写 ```./``` ）。
 2. 把active_matter修改可以下载其他数据集，我们使用的数据集有(按照优先级）：
-   active_matter
-   turbulent_radiative_layer_2D
-   viscoelastic_instability
-   gray_scott_reaction_diffusion
-   rayleigh_benard
-   shear_flow
+   active_matter 51.3G
+   turbulent_radiative_layer_2D 6.9G
+   viscoelastic_instability 66G
+   gray_scott_reaction_diffusion 153.8G
+   rayleigh_benard 342G
+   shear_flow 547G
 3. 数据集下载好应该存放形如：```the_well/datasets/active_matter/data/train或test或val...```。不在的话要挪过来
 
 
