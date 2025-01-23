@@ -68,7 +68,7 @@ python train.py experiment=fno server=local data=active_matter
 ```
 
 ## benchmark必做步骤
-注：我们需要测试的模型有：fno, afno(TBD）, avit, unet_classic(TBD), unet_convnext, dpot(需要自己加进来)
+注：我们需要测试的模型有：fno, afno或dilated_resnet(TBD）, avit, unet_convnext, dpot(需要自己加进来)
 1. 每次debug时修改了代码文件(.py)都需要：激活虚拟环境->在the_well目录下运行```pip install .```重新安装环境，否则无法保存修改。
 3. 当提交的slurm任务没有跑起来时不要修改config文件（.yaml)否则会运行新参数。
 4. 代码运行起来一个epoch并测试完之后，才能确保没有bug。
