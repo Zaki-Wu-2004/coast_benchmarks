@@ -23,7 +23,7 @@ def configure_paths(experiment_folder):
 def get_experiment_name(cfg: DictConfig) -> str:
     model_name = cfg.model._target_.split(".")[-1]
     # slurm_job_id = os.environ.get("SLURM_JOB_ID", "0") - Not using for now since I think it'll be easier to just use name alone
-    return f"{cfg.data.well_dataset_name}-{cfg.name}-{model_name}-{cfg.optimizer.lr}"
+    return f"{cfg.data.well_dataset_name}-{cfg.name}"
 
 
 def configure_experiment(
@@ -58,7 +58,7 @@ def configure_experiment(
             Logger object to print messages to console
     """
     # Sort out default names and folders
-    experiment_name = get_experiment_name(cfg)
+    experiment_name = get_experiment_name(cfg) #i.e. fno
     base_experiment_folder = osp.join(cfg.experiment_dir, experiment_name)
     experiment_folder = cfg.folder_override  # Default is ""
     checkpoint_file = cfg.checkpoint_override  # Default is ""
