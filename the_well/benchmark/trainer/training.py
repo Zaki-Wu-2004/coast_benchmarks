@@ -9,6 +9,7 @@ import torch.distributed as dist
 import tqdm
 import wandb
 from torch.utils.data import DataLoader
+from torch.nn.utils import clip_grad_norm_, clip_grad_value_
 
 from the_well.benchmark.metrics import (
     long_time_metrics,
@@ -43,7 +44,7 @@ class Trainer:
         viz_folder: str,
         formatter: str,
         model: torch.nn.Module,
-        datamodule: AbstractDataModule,
+        datamodule: AbstractDataModule, # att
         optimizer: torch.optim.Optimizer,
         loss_fn: Callable,
         # validation_suite: list,
@@ -317,6 +318,7 @@ class Trainer:
         loss_dict["param_norm"] = param_norm(self.model.parameters())
         return validation_loss, loss_dict
 
+# -> train_loss, train_logs
     def train_one_epoch(self, epoch: int, dataloader: DataLoader) -> float:
         """Train the model for one epoch by looping over the dataloader."""
         self.model.train()
@@ -335,7 +337,10 @@ class Trainer:
                     y_ref.shape == y_pred.shape
                 ), f"Mismatching shapes between reference {y_ref.shape} and prediction {y_pred.shape}"
                 loss = self.loss_fn(y_pred, y_ref, self.dset_metadata).mean()
+            
             self.grad_scaler.scale(loss).backward()
+            #clip_grad_norm_(self.model.parameters(), 1.0)
+            clip_grad_value_(self.model.parameters(), 1.0)
             self.grad_scaler.step(self.optimizer)
             self.grad_scaler.update()
             self.optimizer.zero_grad()
