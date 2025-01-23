@@ -1,0 +1,15 @@
+_target_: the_well.benchmark.models.DPOTNet
+patch_size: 16
+mixing_type: afno
+in_timesteps: 1
+out_timesteps: 1 
+n_blocks: 12
+embed_dim: 768 
+out_layer_dim: 32 
+depth: 12
+modes: 32
+mlp_ratio: 1. 
+n_cls: 12
+normalize: True 
+act: gelu
+time_agg: exp_mlp
