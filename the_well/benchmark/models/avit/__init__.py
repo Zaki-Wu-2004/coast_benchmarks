@@ -169,6 +169,8 @@ class AxialAttentionBlock(nn.Module):
             q, k, v = map(lambda t: rearrange(t, permutation), (q, k, v))
             ax_out = F.scaled_dot_product_attention(q, k, v)
             ax_out = rearrange(ax_out, self.out_permutation)
+            if out.shape != ax_out.shape:
+                ax_out = rearrange(ax_out, "b w h d -> b h w d")
             out = out + ax_out
         # Recombine
         x = self.output_head(out) + self.mlp_remaining(ff)
