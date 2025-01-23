@@ -70,5 +70,7 @@ python train.py experiment=fno server=local data=active_matter
 ## benchmark常见问题
 1. 每次debug时修改了代码文件(.py)都需要：激活虚拟环境->在the_well目录下运行```pip install .```重新安装环境，否则无法保存修改。
 2. 当提交的slurm任务没有跑起来时不要修改config文件（.yaml)否则会运行新参数。
-3. 
+3. 代码运行起来一个epoch并测试完之后，才能确保没有bug。
+4. 如果跑了超过1个epoch发现参数有误，需要进入```the_well/the_well/benchmark/```路径下寻找experiments文件夹，在该文件夹中删除对应名称的文件夹再重新运行，否则将会接续训练之前保存的模型。同样，这个文件夹中存在着之前每次测试的测试结果，要保存好。同理，相同名字的任务可以接续训练。
+5. 该代码自带wandb，但更新比较慢。接续训练可以使用同样的wandb term。
 
