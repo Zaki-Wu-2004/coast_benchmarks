@@ -128,7 +128,7 @@ def train(
         lr_scheduler=lr_scheduler,
         device=device,
         is_distributed=is_distributed,
-        n_steps_output=cfg.data.n_steps_output, ###ok
+        #n_steps_output=cfg.data.n_steps_output, ###ok
     )
     if validation_mode:
         trainer.validate()
