@@ -68,6 +68,7 @@ python train.py experiment=fno server=local data=active_matter
 ```
 
 ## benchmark必做步骤
+注：我们需要测试的模型有：fno, afno(TBD）, avit, unet_classic(TBD), unet_convnext, dpot(需要自己加进来)
 1. 每次debug时修改了代码文件(.py)都需要：激活虚拟环境->在the_well目录下运行```pip install .```重新安装环境，否则无法保存修改。
 3. 当提交的slurm任务没有跑起来时不要修改config文件（.yaml)否则会运行新参数。
 4. 代码运行起来一个epoch并测试完之后，才能确保没有bug。
@@ -75,7 +76,10 @@ python train.py experiment=fno server=local data=active_matter
 6. 该代码自带wandb，但更新比较慢。接续训练可以使用同样的wandb term。
 7. ## 每下载一个数据集，都要前往```the_well/the_well/benchmark/configs/data/```中找到对应的数据集的config文件，把well_base_path改成形如```/home/zw474/project/LOLL/the_well/datasets```的东西。保证你的datasets的下级目录有```active_matter/data/train```等文件夹。 ##
 8. ```the_well/the_well/benchmark/configs/data/```的参数文件中可以改训练时说batch_size，如果报错OOM可以前往这里修改。
-9. 如果想在运行前设置某个实验的名称，可以```the_well/the_well/benchmark/utils/experiment_utils.py```的23行修改名称（不修改也问题不大。建议不要使用slurm的job序号，会使接续训练变麻烦）。
-   ## 不要同时提交两个名字相同的实验！
-10. 
+9. 如果想在运行前设置某个实验的名称，可以```the_well/the_well/benchmark/utils/experiment_utils.py```的23行修改名称（不修改也问题不大。建议不要使用slurm的job序号，会使接续训练变麻烦）。!!!不要同时提交两个名字相同的实验!!!
+
+## 增加新的模型必做步骤：
+1. 打开```the_well/the_well/benchmark```文件夹，以下所有操作都在这里完成。
+2. 打开models文件夹，创建__init__.py文件，在其中编写模型。
+
 
