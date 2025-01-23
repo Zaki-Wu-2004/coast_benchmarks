@@ -343,8 +343,8 @@ def make_video(
     write_path = f"{output_dir}/{metadata.dataset_name}/rollout_video"
     os.makedirs(write_path, exist_ok=True)
     anim.save(
-        f"{write_path}/epoch{epoch_number}_{dset_name}.mp4",
-        writer="ffmpeg",
+        f"{write_path}/epoch{epoch_number}_{dset_name}.gif",
+        writer="pillow",
         fps=max(1, int(predicted_images.shape[0] / 10)),
     )
     plt.close()
