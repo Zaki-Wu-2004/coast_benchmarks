@@ -67,3 +67,8 @@ cd the_well/benchmark
 python train.py experiment=fno server=local data=active_matter
 ```
 
+## benchmark常见问题
+1. 每次debug时修改了代码文件(.py)都需要：激活虚拟环境->在the_well目录下运行```pip install .```重新安装环境，否则无法保存修改。
+2. 当提交的slurm任务没有跑起来时不要修改config文件（.yaml)否则会运行新参数。
+3. 
+
