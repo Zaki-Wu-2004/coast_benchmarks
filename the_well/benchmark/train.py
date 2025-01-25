@@ -54,7 +54,7 @@ def train(
     validation_mode = cfg.validation_mode #False
     logger.info(f"Instantiate datamodule {cfg.data._target_}") # _target_: the_well.data.WellDataModule
     datamodule: WellDataModule = instantiate(
-        cfg.data, world_size=world_size, rank=rank, data_workers=cfg.data_workers#, include_filters=["alpha_-5.0"]
+        cfg.data, world_size=world_size, rank=rank, data_workers=cfg.data_workers, include_filters=["1e6"]
     )
     dset_metadata = datamodule.train_dataset.metadata
     print(dset_metadata)#
