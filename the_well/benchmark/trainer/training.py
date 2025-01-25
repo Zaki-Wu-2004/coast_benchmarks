@@ -112,6 +112,8 @@ class Trainer:
                 The path to the model checkpoint to load. If empty, the model is trained from scratch.
         """
         self.starting_epoch = 1  # Gets overridden on resume
+        self.shift = 20
+        self.windows_num = 87
         self.checkpoint_folder = checkpoint_folder
         self.artifact_folder = artifact_folder
         self.viz_folder = viz_folder
@@ -326,7 +328,12 @@ class Trainer:
         train_logs = {}
         start_time = time.time()  # Don't need to sync this.
         batch_start = time.time()
+        Len = len(dataloader)
+        Len -= (Len // self.windows_num) * self.shift
         for i, batch in enumerate(dataloader):
+            if i % self.windows_num < self.shift:
+                logger.info(f"iter {i} is skipped")
+                continue
             with torch.autocast(
                 self.device.type, enabled=self.enable_amp, dtype=self.amp_type
             ):
@@ -345,7 +352,7 @@ class Trainer:
             self.grad_scaler.update()
             self.optimizer.zero_grad()
             # Syncing for all reduce anyway so may as well compute synchornous metrics
-            epoch_loss += loss.item() / len(dataloader)
+            epoch_loss += loss.item() / Len
             backward_time = time.time() - batch_start - forward_time - batch_time
             total_time = time.time() - batch_start
             logger.info(
