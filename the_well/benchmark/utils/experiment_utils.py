@@ -23,7 +23,7 @@ def configure_paths(experiment_folder):
 def get_experiment_name(cfg: DictConfig) -> str:
     model_name = cfg.model._target_.split(".")[-1]
     # slurm_job_id = os.environ.get("SLURM_JOB_ID", "0") - Not using for now since I think it'll be easier to just use name alone
-    return f"{cfg.data.well_dataset_name}-{cfg.name}"
+    return f"{cfg.data.well_dataset_name}-{cfg.name}-1e6"
 
 
 def configure_experiment(
