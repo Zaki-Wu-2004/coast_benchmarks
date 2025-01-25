@@ -1,6 +1,6 @@
 _target_: the_well.data.WellDataModule
 batch_size: 8
-well_base_path: /mnt/gpuxl/polymathic/the_well/datasets/
+well_base_path: ./datasets/
 well_dataset_name: rayleigh_benard
 use_normalization: True
 min_dt_stride: 2
