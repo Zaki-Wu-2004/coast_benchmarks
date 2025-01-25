@@ -21,11 +21,37 @@ import torch
 import yaml
 from torch.utils.data import Dataset
 
-from the_well.data.utils import IO_PARAMS, WELL_DATASETS, is_dataset_in_the_well
+from the_well.data.utils import IO_PARAMS
 from the_well.utils.export import hdf5_to_xarray
 
 if TYPE_CHECKING:
     from .augmentation import Augmentation
+
+WELL_DATASETS = [
+    "acoustic_scattering_maze",
+    "acoustic_scattering_inclusions",
+    "acoustic_scattering_discontinuous",
+    "active_matter",
+    "convective_envelope_rsg",
+    "euler_multi_quadrants_openBC",
+    "euler_multi_quadrants_periodicBC",
+    "helmholtz_staircase",
+    "MHD_256",
+    "MHD_64",
+    "gray_scott_reaction_diffusion",
+    "planetswe",
+    "post_neutron_star_merger",
+    "rayleigh_benard",
+    "rayleigh_taylor_instability",
+    "shear_flow",
+    "supernova_explosion_64",
+    "supernova_explosion_128",
+    "turbulence_gravity_cooling",
+    "turbulent_radiative_layer_2D",
+    "turbulent_radiative_layer_3D",
+    "viscoelastic_instability",
+    "dummy",
+]
 
 
 def raw_steps_to_possible_sample_t0s(
@@ -38,13 +64,13 @@ def raw_steps_to_possible_sample_t0s(
       trajectory such that all samples have at least n_steps_input + n_steps_output steps with steps separated
       by dt_stride.
 
-    ex1: total_steps_in_trajectory = 5, n_steps_input = 1, n_steps_output = 1, dt_stride = 1
+    ex1: total_steps_in_trajectory = 5, n_steps_input = 1, n_steps_output = 1, dt_stride = 1, window_size = 2
         Possible samples are: [0, 1], [1, 2], [2, 3], [3, 4]
-    ex2: total_steps_in_trajectory = 5, n_steps_input = 1, n_steps_output = 1, dt_stride = 2
+    ex2: total_steps_in_trajectory = 5, n_steps_input = 1, n_steps_output = 1, dt_stride = 2, window_size = 3
         Possible samples are: [0, 2], [1, 3], [2, 4]
-    ex3: total_steps_in_trajectory = 5, n_steps_input = 1, n_steps_output = 1, dt_stride = 3
+    ex3: total_steps_in_trajectory = 5, n_steps_input = 1, n_steps_output = 1, dt_stride = 3, window_size = 4
         Possible samples are: [0, 3], [1, 4]
-    ex4: total_steps_in_trajectory = 5, n_steps_input = 2, n_steps_output = 1, dt_stride = 2
+    ex4: total_steps_in_trajectory = 5, n_steps_input = 2, n_steps_output = 1, dt_stride = 2, window_size = 5
         Possible samples are: [0, 2, 4]
 
     """
@@ -224,7 +250,7 @@ class WellDataset(Dataset):
         include_filters: List[str] = [],
         exclude_filters: List[str] = [],
         use_normalization: bool = False,
-        max_rollout_steps=100,
+        max_rollout_steps = 100,
         n_steps_input: int = 1,
         n_steps_output: int = 1,
         min_dt_stride: int = 1,
@@ -241,6 +267,9 @@ class WellDataset(Dataset):
         storage_options: Optional[Dict] = None,
     ):
         super().__init__()
+        self.shift = 10 ######_----10----------------------------------------------------
+        if full_trajectory_mode:
+            n_steps_input += self.shift
         assert path is not None or (
             well_base_path is not None and well_dataset_name is not None
         ), "Must specify path or well_base_path and well_dataset_name"
@@ -249,8 +278,8 @@ class WellDataset(Dataset):
             self.normalization_path = os.path.join(path, normalization_path)
 
         else:
-            assert is_dataset_in_the_well(
-                well_dataset_name
+            assert (
+                well_dataset_name in WELL_DATASETS
             ), f"Dataset name {well_dataset_name} not in the expected list {WELL_DATASETS}."
             self.data_path = os.path.join(
                 well_base_path, well_dataset_name, "data", well_split_name
@@ -286,7 +315,7 @@ class WellDataset(Dataset):
         self.exclude_filters = exclude_filters
         self.max_rollout_steps = max_rollout_steps
         self.n_steps_input = n_steps_input
-        self.n_steps_output = n_steps_output  # Gets overridden by full trajectory mode
+        self.n_steps_output = n_steps_output ###  # Gets overridden by full trajectory mode
         self.min_dt_stride = min_dt_stride
         self.max_dt_stride = max_dt_stride
         self.flatten_tensors = flatten_tensors
@@ -348,6 +377,7 @@ class WellDataset(Dataset):
                 trajectories = int(_f.attrs["n_trajectories"])
                 # Number of steps is always last dim of time
                 steps = _f["dimensions"]["time"].shape[-1]
+                steps = min(101, steps) ### z.wu added
                 size_tuple = [
                     _f["dimensions"][d].shape[-1]
                     for d in _f["dimensions"].attrs["spatial_dims"]
@@ -421,6 +451,7 @@ class WellDataset(Dataset):
         # Full trajectory mode overrides the above and just sets each sample to "full"
         # trajectory where full = min(lowest_steps_per_file, max_rollout_steps)
         if self.full_trajectory_mode:
+            self.n_steps_input += 20
             self.n_steps_output = (
                 lowest_steps // self.min_dt_stride
             ) - self.n_steps_input
@@ -431,14 +462,25 @@ class WellDataset(Dataset):
             self.n_windows_per_trajectory = [1] * self.n_files
             self.n_steps_per_trajectory = [lowest_steps] * self.n_files
             self.file_index_offsets = np.cumsum([0] + self.n_trajectories_per_file)
+            print("self.file_index_offsets:", self.file_index_offsets)
 
+        print("self.n_windows_per_trajectory:", self.n_windows_per_trajectory)
+        print("self.n_windows_per_trajectory:", self.n_windows_per_trajectory)
+        print("self.n_windows_per_trajectory:", self.n_windows_per_trajectory)
+        print("self.n_windows_per_trajectory:", self.n_windows_per_trajectory)
+        print("self.n_windows_per_trajectory:", self.n_windows_per_trajectory)
+        print("----------------------------")
         # Just to make sure it doesn't put us in file -1
         self.file_index_offsets[0] = -1
         self.files: List[h5.File | None] = [
             None for _ in self.files_paths
         ]  # We open file references as they come
         # Dataset length is last number of samples
-        self.len = self.file_index_offsets[-1]
+        #####_----------------------------------------------------------------------
+        ### z.wu added
+        
+        self.len = self.file_index_offsets[-1] 
+        #####_----------------------------------------------------------------------
         self.n_spatial_dims = int(ndims.pop())  # Number of spatial dims
         self.size_tuple = tuple(map(int, size_tuples.pop()))  # Size of spatial dims
         self.dataset_name = names.pop()  # Name of dataset
@@ -669,11 +711,12 @@ class WellDataset(Dataset):
 
     def __getitem__(self, index):
         # Find specific file and local index
+        #####_----------------------------------------------------------------------
         file_idx = int(
             np.searchsorted(self.file_index_offsets, index, side="right") - 1
         )  # which file we are on
         windows_per_trajectory = self.n_windows_per_trajectory[file_idx]
-        local_idx = index - max(
+        local_idx = index - max( ### z.wu added
             self.file_index_offsets[file_idx], 0
         )  # First offset is -1
         sample_idx = local_idx // windows_per_trajectory
