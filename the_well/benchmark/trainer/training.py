@@ -185,6 +185,8 @@ class Trainer:
         # Create a moving batch of one step at a time
         moving_batch = batch
         moving_batch["input_fields"] = moving_batch["input_fields"].to(self.device)
+        if moving_batch["input_fields"].shape[1] > 4:
+            moving_batch["input_fields"] = moving_batch["input_fields"][:, -4:]
         if "constant_fields" in moving_batch:
             moving_batch["constant_fields"] = moving_batch["constant_fields"].to(
                 self.device
