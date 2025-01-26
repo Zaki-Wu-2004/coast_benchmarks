@@ -10,6 +10,6 @@ depth: 12
 modes: 32
 mlp_ratio: 1. 
 n_cls: 12
-normalize: True 
+normalize: False
 act: gelu
 time_agg: exp_mlp
